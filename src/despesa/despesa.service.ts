@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateDespesaDto } from './dto/create-despesa.dto';
 import { UpdateDespesaDto } from './dto/update-despesa.dto';
 import { Despesa } from './entities/despesa.entity';
 
@@ -9,25 +8,48 @@ import { Despesa } from './entities/despesa.entity';
 export class DespesaService {
   constructor(
     @InjectRepository(Despesa)
-    private desrepository: Repository<Despesa>,
+    private repository: Repository<Despesa>,
   ) {}
-  create(createDespesaDto: CreateDespesaDto) {
-    return this.desrepository.save(createDespesaDto);
-  }
 
   findAll() {
-    return this.desrepository.find();
+    return this.repository.find();
+  }
+
+  async findAllByUserId(userId: number) {
+    return this.repository.find({
+      where: {
+        usersId: userId,
+      },
+    });
   }
 
   findOne(id: number) {
-    return this.desrepository.findOneOrFail(id);
+    return this.repository.findOneOrFail(id);
   }
 
   update(id: number, updateDespesaDto: UpdateDespesaDto) {
-    return this.desrepository.update(id, updateDespesaDto);
+    return this.repository.update(id, updateDespesaDto);
   }
 
   remove(id: number) {
-    return this.desrepository.delete(id);
+    return this.repository.delete(id);
   }
 }
+//buscar users autenticados, banco
+
+// função de somas
+// async somadesp() {
+//   return this.repository
+//     .createQueryBuilder('despesas')
+//     .select('SUM(amount)', 'sum')
+//     .getRawOne();
+// }
+
+//somar somente um
+
+// const sum = this.repository
+//   .createQueryBuilder('despesas')
+//   .select(['SUM(amount)'])
+//   .where({ usersId: userId })
+//   .getRawMany();
+// return sum;

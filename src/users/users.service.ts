@@ -16,10 +16,18 @@ export class UsersService {
     if (await this.findEmailUser(createUserDto.email)) {
       throw new ForbiddenException('usuario ja existe');
     }
-    await this.usersRepository.save(createUserDto);
+    this.usersRepository.save(createUserDto);
+    return {
+      message: 'usuario cadastrado com sucesso',
+      email: createUserDto.email,
+      name: createUserDto.name,
+    };
   }
   async findEmailUser(email: string) {
     return this.usersRepository.findOne({ email });
+  }
+  async findPassUser(password: string) {
+    return this.usersRepository.findOne({ password });
   }
 
   async findAll(): Promise<User[]> {

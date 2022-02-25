@@ -4,11 +4,12 @@ export class CreateReceitaDto {
   @IsString()
   @IsNotEmpty()
   title: string;
+
   @IsNumber()
   @IsNotEmpty()
   amount: number;
+
   @IsString()
   @IsNotEmpty()
   category: string;
-  token: string;
 }

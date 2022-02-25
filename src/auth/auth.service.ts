@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { Token } from './interfaces/jwt.interface';
 
 @Injectable()
 export class AuthService {
@@ -13,11 +12,15 @@ export class AuthService {
 
   async validateUser(createauthdto: CreateAuthDto): Promise<any> {
     const user = await this.usersService.findEmailUser(createauthdto.email);
-    if (user && user.password === user.password) {
+
+    if (user && user.password === createauthdto.password) {
       const payload = { username: user.email, sub: user.id };
+      const token = this.jwtservice.sign(payload);
+
       return {
-        access_token: this.jwtservice.sign(payload),
+        access_token: token,
       };
     }
+    throw new UnauthorizedException('usuario não existe');
   }
 }

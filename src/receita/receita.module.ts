@@ -4,11 +4,13 @@ import { ReceitaController } from './receita.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Receita } from './entities/receita.entity';
 import { UsersModule } from 'src/users/users.module';
+import { RecValueService } from './receitavalue/recvalue.service';
+import { RecvalueController } from './receitavalue/recvalue.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Receita]), UsersModule],
-  controllers: [ReceitaController],
-  providers: [ReceitaService],
-  exports: [ReceitaService],
+  controllers: [ReceitaController, RecvalueController],
+  providers: [ReceitaService, RecValueService],
+  exports: [RecValueService, ReceitaService],
 })
 export class ReceitaModule {}
