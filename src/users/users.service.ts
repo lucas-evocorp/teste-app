@@ -1,8 +1,16 @@
-import { ForbiddenException, Injectable, Res } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Res,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IUserAuth } from 'src/auth/interfaces/IUserAuth-.interface';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateEmailInterface } from './dto/update-email.interface';
+import { UpdatePassInterface } from './dto/update-pass.interface';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
@@ -25,7 +33,7 @@ export class UsersService {
     };
   }
   async saveprofileimage(file: string, id: number) {
-    const url = 'http:localhost:3333/user/upload/profile/';
+    const url = 'http://192.168.200.253:3333/user/upload/profile/';
     const user = await this.usersRepository.findOne(id);
     user.profileimage = url + file;
 
@@ -50,13 +58,47 @@ export class UsersService {
 
   async findOne(id: number) {
     const user = await this.usersRepository.findOne(id);
-    console.log(user);
+    // return user;
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      profile: user.profileimage,
+    };
+
+    // console.log(user);
   }
 
-  async update(id: number, updateuserdto: UpdateUserDto) {
+  async updatepass(
+    id: number,
+    updatepass: UpdatePassInterface,
+    updateuserdto: UpdateUserDto,
+  ) {
     const user = await this.usersRepository.findOne(id);
-
-    await this.usersRepository.update(id, updateuserdto);
+    // console.log(user.password);
+    if (user && user.password === updatepass.beforepass) {
+      return await this.usersRepository.update(id, updateuserdto);
+    }
+    throw new HttpException(
+      'senha nao corresponde a anterior',
+      HttpStatus.FORBIDDEN,
+    );
+  }
+  async updateemail(
+    id: number,
+    updateemail: UpdateEmailInterface,
+    updateuserdto: UpdateUserDto,
+  ) {
+    const user = await this.usersRepository.findOne(id);
+    // console.log(user.password);
+    if (user.email === updateemail.beforeemail) {
+      return await this.usersRepository.update(id, updateuserdto);
+    }
+    throw new HttpException(
+      'email nao corresponde a anterior',
+      HttpStatus.FORBIDDEN,
+    );
   }
 
   async remove(id: number) {

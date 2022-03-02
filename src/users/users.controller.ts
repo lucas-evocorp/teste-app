@@ -10,11 +10,10 @@ import {
   UseInterceptors,
   UploadedFile,
   Res,
-  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdatePassInterface } from './dto/update-pass.interface';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IndexUser } from 'src/swagger/index-users.swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -24,7 +23,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import path = require('path');
 import { v4 as uuidv4 } from 'uuid';
-import { profile } from 'console';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateEmailInterface } from './dto/update-email.interface';
 
 export const storage = {
   storage: diskStorage({
@@ -58,12 +58,8 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('authenticate')
-  findOneauth(@UserAuth() usuarioauth: IUserAuth) {
-    this.usersService.findOne(usuarioauth.userId);
-    return {
-      Id: usuarioauth.userId,
-      user: usuarioauth.username,
-    };
+  async findOneauth(@UserAuth() usuarioauth: IUserAuth) {
+    return this.usersService.findOne(usuarioauth.userId);
   }
 
   @Get()
@@ -85,10 +81,7 @@ export class UsersController {
     return res.sendFile(profile, { root: 'uploads' });
   }
 
-  @Put('alterate')
-  @ApiOperation({
-    summary: 'endpoint responsavel por atualizar informações do usuario.',
-  })
+  @Put('alteratepass')
   @ApiResponse({
     status: 200,
     description: 'usuario atualizado com sucesso',
@@ -99,8 +92,36 @@ export class UsersController {
   updatepass(
     @UserAuth() usuarioauth: IUserAuth,
     @Body() updateuserdto: UpdateUserDto,
+    @Body() updatepassdto: UpdatePassInterface,
   ) {
-    return this.usersService.update(usuarioauth.userId, updateuserdto);
+    // console.log(updatepassdto.beforepass);
+
+    return this.usersService.updatepass(
+      usuarioauth.userId,
+      updatepassdto,
+      updateuserdto,
+    );
+  }
+  @Put('alteratemail')
+  @ApiResponse({
+    status: 200,
+    description: 'usuario atualizado com sucesso',
+    isArray: true,
+    type: IndexUser,
+  })
+  @UseGuards(AuthGuard('jwt'))
+  updateemail(
+    @UserAuth() usuarioauth: IUserAuth,
+    @Body() updateuserdto: UpdateUserDto,
+    @Body() updateemail: UpdateEmailInterface,
+  ) {
+    // console.log(updatepassdto.beforepass);
+
+    return this.usersService.updateemail(
+      usuarioauth.userId,
+      updateemail,
+      updateuserdto,
+    );
   }
 
   @Delete(':id')
