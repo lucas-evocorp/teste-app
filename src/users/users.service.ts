@@ -1,5 +1,6 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Res } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IUserAuth } from 'src/auth/interfaces/IUserAuth-.interface';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -23,22 +24,39 @@ export class UsersService {
       name: createUserDto.name,
     };
   }
+  async saveprofileimage(file: string, id: number) {
+    const url = 'http:localhost:3333/user/upload/profile/';
+    const user = await this.usersRepository.findOne(id);
+    user.profileimage = url + file;
+
+    return await this.usersRepository.save(user);
+  }
+
   async findEmailUser(email: string) {
     return this.usersRepository.findOne({ email });
   }
-  async findPassUser(password: string) {
-    return this.usersRepository.findOne({ password });
+
+  async findpic(id: number) {
+    const user = await this.usersRepository.findOne(id);
+
+    // console.log(image);
+
+    return user.profileimage;
   }
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find();
   }
+
   async findOne(id: number) {
-    return await this.usersRepository.findOne(id);
+    const user = await this.usersRepository.findOne(id);
+    console.log(user);
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    return this.usersRepository.update(+id, updateUserDto);
+  async update(id: number, updateuserdto: UpdateUserDto) {
+    const user = await this.usersRepository.findOne(id);
+
+    await this.usersRepository.update(id, updateuserdto);
   }
 
   async remove(id: number) {

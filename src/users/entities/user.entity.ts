@@ -26,6 +26,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ nullable: true })
+  profileimage: string;
+
   @OneToMany(() => Receita, (receita) => receita.user)
   receitas: Receita[];
 

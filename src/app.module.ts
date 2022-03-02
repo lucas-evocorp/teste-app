@@ -26,7 +26,7 @@ import { MulterModule } from '@nestjs/platform-express';
     AuthModule,
     TotalValueModule,
     MulterModule.register({
-      dest: '../upload',
+      dest: './uploads',
     }),
   ],
   controllers: [],

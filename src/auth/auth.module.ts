@@ -11,6 +11,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 @Module({
   imports: [
     UsersModule,
+
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,

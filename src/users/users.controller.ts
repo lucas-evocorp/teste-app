@@ -20,13 +20,24 @@ import { IndexUser } from 'src/swagger/index-users.swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { UserAuth } from 'src/auth/decorators/user-auth';
 import { IUserAuth } from 'src/auth/interfaces/IUserAuth-.interface';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { editFileName, imageFileFilter } from 'src/utils/file-uploading.utils';
-import { ImageProfile } from './dto/imageprofile.interface';
-import { User } from './entities/user.entity';
+import path = require('path');
+import { v4 as uuidv4 } from 'uuid';
+import { profile } from 'console';
 
+export const storage = {
+  storage: diskStorage({
+    destination: './uploads',
+    filename: (req, file, cb) => {
+      const filename: string =
+        path.parse(file.originalname).name.replace(/\s/g, '') + uuidv4();
+      const extension: string = path.parse(file.originalname).ext;
+
+      cb(null, `${filename}${extension}`);
+    },
+  }),
+};
 @Controller('user')
 @ApiTags('users')
 export class UsersController {
@@ -69,21 +80,12 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  @ApiOperation({
-    summary: 'endpoint responsavel por listar usuarios por ID',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'usuario listado com sucesso',
-    isArray: true,
-    type: IndexUser,
-  })
-  findOne(@Param('id') id: number) {
-    return this.usersService.findOne(id);
+  @Get('upload/profile/:imagename')
+  findOne(@Param('imagename') profile, @Res() res) {
+    return res.sendFile(profile, { root: 'uploads' });
   }
 
-  @Put(':id')
+  @Put('alterate')
   @ApiOperation({
     summary: 'endpoint responsavel por atualizar informações do usuario.',
   })
@@ -94,11 +96,11 @@ export class UsersController {
     type: IndexUser,
   })
   @UseGuards(AuthGuard('jwt'))
-  update(
+  updatepass(
     @UserAuth() usuarioauth: IUserAuth,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateuserdto: UpdateUserDto,
   ) {
-    return this.usersService.update(usuarioauth.userId, updateUserDto);
+    return this.usersService.update(usuarioauth.userId, updateuserdto);
   }
 
   @Delete(':id')
@@ -114,14 +116,16 @@ export class UsersController {
   remove(@Param('id') id: number) {
     return this.usersService.remove(id);
   }
-  @Post('/uploads')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() File, @Req() req) {
-    const user: User = req.user.user;
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file', storage))
+  uploadFile(@UploadedFile() file, @UserAuth() usuarioauth: IUserAuth) {
+    const profileimage = file.filename;
+
+    return this.usersService.saveprofileimage(profileimage, usuarioauth.userId);
   }
 
-  @Get('file/:imgpath')
-  seeUploadedFile(@Param('imgpath') image, @Res() res) {
-    return res.sendFile(image, { root: './upload' });
-  }
+  //
+  // showImage() {}
 }
